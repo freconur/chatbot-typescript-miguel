@@ -10,7 +10,7 @@ dotenv.config()
 // export const app = initializeApp({credential:cert(serviceAccount)});
 
 initializeApp({
-credential:cert(JSON.parse(process.env.PRIVATE_KEY || null))
+credential:cert(JSON.parse(process.env.PRIVATE_KEY))
 // credential:cert('./firebase.json')
 });
 // const firebaseConfig = {
