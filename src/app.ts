@@ -91,7 +91,7 @@ const flujoPagoVerificacion = addKeyword(['verificacion', 'verificar'])
                         })
                         const browserTest = await puppeteer.launch({
                           headless: true,
-                          executablePath: '/path/to/Chrome'
+                          // executablePath: '/path/to/Chrome'
                           // slowMo:3000
                         })
                         const pageTest = await browserTest.newPage()
