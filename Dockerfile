@@ -1,5 +1,9 @@
 # Image size ~ 400MB
+
+
+
 FROM node:21-alpine3.18 as builder
+
 
 WORKDIR /app
 
@@ -11,9 +15,9 @@ COPY . .
 COPY package*.json *-lock.yaml ./
 
 RUN apk add --no-cache --virtual .gyp \
-        python3 \
-        make \
-        g++ \
+    python3 \
+    make \
+    g++ \
     && apk add --no-cache git \
     && pnpm install && pnpm run build \
     && apk del .gyp
@@ -25,6 +29,12 @@ WORKDIR /app
 ARG PORT
 ENV PORT $PORT
 EXPOSE $PORT
+
+FROM ghrc.io/puppeteer/puppeteer:22.7.1
+ENV PUPPETEER_SKIP_CHROMIUM_DONWLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+WORKDIR /usr/src/app
+RUN npm ci
 
 COPY --from=builder /app/assets ./assets
 COPY --from=builder /app/dist ./dist
@@ -38,3 +48,4 @@ RUN npm cache clean --force && pnpm install --production --ignore-scripts \
     && rm -rf $PNPM_HOME/.npm $PNPM_HOME/.node-gyp
 
 CMD ["npm", "start"]
+
