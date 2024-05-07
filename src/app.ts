@@ -12,9 +12,8 @@ import puppeteer from 'puppeteer';
 import { dateConvertObject, dateConvertObjectSuscription } from 'date';
 import dotenv from 'dotenv'
 dotenv.config()
-const PORT = process.env.PORT ?? 3000
 
-const URL_API_DOCUMENT_EXCEL = "https://script.google.com/macros/s/AKfycbxBvwKzGqbquehk_A7t_AurdzK3ki49ujvXGRlJsNHPh9t4lmLQeWGb6Nz42m9XSgk1/exec"
+const PORT = process.env.PORT ?? 3000
 
 const flujoEnviaPdf = addKeyword<Provider, Database>(EVENTS.ACTION)
   .addAnswer('tu producto ha sido entregado', null, async (_, { state, flowDynamic }) => {
@@ -92,6 +91,7 @@ const flujoPagoVerificacion = addKeyword(['verificacion', 'verificar'])
                         })
                         const browserTest = await puppeteer.launch({
                           headless: true,
+                          executablePath: '/path/to/Chrome'
                           // slowMo:3000
                         })
                         const pageTest = await browserTest.newPage()
