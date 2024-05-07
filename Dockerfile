@@ -1,5 +1,9 @@
 # Image size ~ 400MB
-
+FROM ghrc.io/puppeteer/puppeteer:22.7.1
+ENV PUPPETEER_SKIP_CHROMIUM_DONWLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+WORKDIR /usr/src/app
+RUN npm ci
 
 
 FROM node:21-alpine3.18 as builder
@@ -30,11 +34,7 @@ ARG PORT
 ENV PORT $PORT
 EXPOSE $PORT
 
-FROM ghrc.io/puppeteer/puppeteer:22.7.1
-ENV PUPPETEER_SKIP_CHROMIUM_DONWLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
-WORKDIR /usr/src/app
-RUN npm ci
+
 
 COPY --from=builder /app/assets ./assets
 COPY --from=builder /app/dist ./dist
