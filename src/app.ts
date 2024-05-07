@@ -95,7 +95,7 @@ const flujoPagoVerificacion = addKeyword(['verificacion', 'verificar'])
                           // executablePath: '/path/to/Chrome',
                           // defaultViewport: chromium.defaultViewport,
                           args: [
-                            "--disabled-setuid-snadbox",
+                            "--disabled-setuid-sandbox",
                             "--no-sandbox",
                             "--single-process",
                             "--no-zygote"
