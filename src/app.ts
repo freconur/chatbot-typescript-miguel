@@ -6,6 +6,7 @@ import { db } from 'firebase.config';
 import axios from 'axios';
 import { getJustOneName } from '../functionsUtils';
 // import fs from 'fs/promises';
+import chromium from '@sparticuz/chromium'
 import cron from 'node-cron'
 import fsPromises from "node:fs/promises";
 import puppeteer from 'puppeteer';
@@ -30,7 +31,7 @@ const flujoEnviaPdf = addKeyword<Provider, Database>(EVENTS.ACTION)
   })
 
 const flujoPagoVerificacion = addKeyword(['verificacion', 'verificar'])
-  .addAnswer('escribe el numero de *DNI* con el que se realizo el pago del yape para la verificación', { capture: true }, async (ctx, { fallBack,gotoFlow, flowDynamic, state }) => {
+  .addAnswer('escribe el numero de *DNI* con el que se realizo el pago del yape para la verificación', { capture: true }, async (ctx, { fallBack, gotoFlow, flowDynamic, state }) => {
     await state.update({ estadoDeVerificacion: true })
     let dniDePagoDeYape
     let nomComPagoYape
@@ -72,7 +73,7 @@ const flujoPagoVerificacion = addKeyword(['verificacion', 'verificar'])
           )
           .then(async response => {
             const listaDeYapes = await response?.data.content
-            console.log('listaDeYapes',listaDeYapes)
+            console.log('listaDeYapes', listaDeYapes)
             if (listaDeYapes?.length > 5) {
               try {
                 listaDeYapes?.map(async yape => {
@@ -91,22 +92,26 @@ const flujoPagoVerificacion = addKeyword(['verificacion', 'verificar'])
                         })
                         const browserTest = await puppeteer.launch({
                           headless: true,
-                          executablePath: '/path/to/Chrome'
+                          // executablePath: '/path/to/Chrome',
+                          defaultViewport: chromium.defaultViewport,
+                          args: chromium.args,
+                          executablePath: await chromium.executablePath(),
+                          ignoreHTTPSErrors: true,
                           // slowMo:3000
                         })
                         const pageTest = await browserTest.newPage()
                         await pageTest.goto(`${process.env.URL_PAGE_MANAGE}/customers/${state.getMyState().dniUsuario}`, {
                           waitUntil: 'networkidle2',
                         })
-  
+
                         await pageTest.setViewport({ width: 1366, height: 768 });
-  
+
                         // Get the height of the page after navigating to it.
                         // This strategy to calculate height doesn't work always though. 
                         const bodyHandle = await pageTest.$('body');
                         const { height } = await bodyHandle.boundingBox();
                         await bodyHandle.dispose();
-  
+
                         const calculatedVh = pageTest.viewport().height;
                         let vhIncrease = 0;
                         while (vhIncrease + calculatedVh < height) {
@@ -118,15 +123,15 @@ const flujoPagoVerificacion = addKeyword(['verificacion', 'verificar'])
                           // await pageTest.waitFor(300);
                           vhIncrease = vhIncrease + calculatedVh;
                         }
-  
+
                         // Setting the viewport to the full height might reveal extra elements
                         await pageTest.setViewport({ width: 1366, height: calculatedVh });
-  
+
                         // Scroll back to the top of the page by using evaluate again.
                         await pageTest.evaluate(() => {
                           window.scrollTo(0, 0);
                         });
-  
+
                         await pageTest.pdf({
                           path: `${state.get('dniUsuario')}.pdf`,
                           format: 'A4'
@@ -140,7 +145,7 @@ const flujoPagoVerificacion = addKeyword(['verificacion', 'verificar'])
                     })
                   }
                 })
-              }catch (error) {
+              } catch (error) {
                 console.log(error)
                 return fallBack('Algo paso en el camino, porfavor intenta nuevamente')
               }
@@ -382,7 +387,7 @@ const main = async () => {
 
 
   // cron.schedule('*/1 * * * *', async () => {
-    cron.schedule('* 1 * * *', async () => {
+  cron.schedule('* 1 * * *', async () => {
     console.log('hemos entrado')
     const customersActiveSubscription = []
     const customerSubscriptionActive = db.collection("customers");
