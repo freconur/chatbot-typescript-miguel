@@ -1,23 +1,33 @@
-FROM node:21-alpine3.18 as builder
+FROM bitnami/node:22-debian-12 as builder
 
+RUN mkdir -p /usr/src/app/node_modules
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
-ENV PNPM_HOME=/usr/local/bin
+RUN corepack enable && corepack prepare npm@latest --activate
 
+ENV PNPM_HOME=/usr/local/bin
+RUN apt-get update \
+    && apt-get install -y wget gnupg \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
 COPY . .
 
 COPY package*.json *-lock.yaml ./
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+#  apk add --no-cache --virtual .gyp \
+# RUN apk add --no-cache --virtual .gyp \
+#     python3 \
+#     make \
+#     g++ \
+#     && apk add --no-cache git \
+#     && pnpm install && pnpm run build \
+#     && apk del .gyp
 
-RUN apk add --no-cache --virtual .gyp \
-    python3 \
-    make \
-    g++ \
-    && apk add --no-cache git \
-    && pnpm install && pnpm run build \
-    && apk del .gyp
-
-FROM node:21-alpine3.18 as deploy
+FROM bitnami/node:22-debian-12 as deploy
 
 WORKDIR /app
 
@@ -25,16 +35,24 @@ ARG PORT
 ENV PORT $PORT
 EXPOSE $PORT
 
-
-
-COPY --from=builder /app/assets ./assets
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/*.json /app/*-lock.yaml ./
-RUN corepack enable && corepack prepare pnpm@latest  --activate 
+RUN apt-get update \
+    && apt-get install -y wget gnupg \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+# COPY --from=builder /app/assets ./assets
+# COPY --from=builder /app/dist ./dist
+# COPY --from=builder /app/*.json /app/*-lock.yaml ./
+COPY . .
+COPY package*.json *-lock.yaml ./
+RUN corepack enable && corepack prepare npm@latest  --activate 
 ENV PNPM_HOME=/usr/local/bin
-
-RUN npm cache clean --force && pnpm install --production --ignore-scripts \
-    && addgroup -g 1001 -S nodejs && adduser -S -u 1001 nodejs \
-    && rm -rf $PNPM_HOME/.npm $PNPM_HOME/.node-gyp
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+# RUN npm cache clean --force && pnpm install --production --ignore-scripts \
+#     && addgroup -g 1001 -S nodejs && adduser -S -u 1001 nodejs \
+#     && rm -rf $PNPM_HOME/.npm $PNPM_HOME/.node-gyp
 
 CMD ["npm", "start"]
