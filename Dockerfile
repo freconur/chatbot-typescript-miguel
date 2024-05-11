@@ -1,6 +1,5 @@
 FROM bitnami/node:22-debian-12 as builder
 
-RUN mkdir -p /usr/src/app/node_modules
 WORKDIR /app
 
 RUN corepack enable && corepack prepare npm@latest --activate
@@ -43,11 +42,11 @@ RUN apt-get update \
     && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
-# COPY --from=builder /app/assets ./assets
-# COPY --from=builder /app/dist ./dist
-# COPY --from=builder /app/*.json /app/*-lock.yaml ./
-COPY . .
-COPY package*.json *-lock.yaml ./
+COPY --from=builder /app/assets ./assets
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/*.json /app/*-lock.yaml ./
+
+# COPY package*.json *-lock.yaml ./
 RUN corepack enable && corepack prepare npm@latest  --activate 
 ENV PNPM_HOME=/usr/local/bin
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
@@ -55,4 +54,4 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 #     && addgroup -g 1001 -S nodejs && adduser -S -u 1001 nodejs \
 #     && rm -rf $PNPM_HOME/.npm $PNPM_HOME/.node-gyp
 
-CMD ["npm", "start"]
+CMD ["npm", "build","start"]
