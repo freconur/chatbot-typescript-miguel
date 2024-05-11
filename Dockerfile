@@ -2,8 +2,7 @@ FROM node:21-alpine3.18 as builder
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@latest puppeteer@22.7.1 --activate
-ENV PUPPETEER_SKIP_CHROMIUM_DONWLOAD=true 
+RUN corepack enable && corepack prepare pnpm@latest --activate
 ENV PNPM_HOME=/usr/local/bin
 
 COPY . .
@@ -31,8 +30,7 @@ EXPOSE $PORT
 COPY --from=builder /app/assets ./assets
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/*.json /app/*-lock.yaml ./
-RUN corepack enable && corepack prepare pnpm@latest install puppeteer@22.7.1 --activate 
-ENV PUPPETEER_SKIP_CHROMIUM_DONWLOAD=true 
+RUN corepack enable && corepack prepare pnpm@latest  --activate 
 ENV PNPM_HOME=/usr/local/bin
 
 RUN npm cache clean --force && pnpm install --production --ignore-scripts \
