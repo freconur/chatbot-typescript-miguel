@@ -1,52 +1,37 @@
-FROM node:21-alpine3.18 as builder
+FROM node:20.11.1
 
-WORKDIR /app
+# Install the latest Chrome dev package and necessary fonts and libraries
+RUN apt-get update \\
+    && apt-get install -y wget gnupg \\
+    && wget -q -O - <https://dl-ssl.google.com/linux/linux_signing_key.pub> | gpg --dearmor -o /usr/share/keyrings/googlechrome-linux-keyring.gpg \\
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/googlechrome-linux-keyring.gpg] <https://dl-ssl.google.com/linux/chrome/deb/> stable main" > /etc/apt/sources.list.d/google.list \\
+    && apt-get update \\
+    && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-khmeros fonts-kacst fonts-freefont-ttf libxss1 dbus dbus-x11 \\
+    --no-install-recommends \\
+    && rm -rf /var/lib/apt/lists/* \\
+    && groupadd -r apify && useradd -rm -g apify -G audio,video apify
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
-ENV PNPM_HOME=/usr/local/bin
+# Determine the path of the installed Google Chrome
+RUN which google-chrome-stable || true
 
-COPY . .
+# Switch to the non-root user
+USER apify
 
-COPY package*.json *-lock.yaml ./
+# Set the working directory
+WORKDIR /home/apify
 
-RUN apk add --no-cache --virtual .gyp \
-    python3 \
-    make \
-    g++ \
-    && apk add --no-cache git \
-    && pnpm install && pnpm run build \
-    && apk del .gyp
+# Copy package.json and package-lock.json
+COPY --chown=apify:apify package*.json ./
 
-FROM node:21-alpine3.18 as deploy
+# Install Puppeteer without downloading bundled Chromium
+RUN npm install puppeteer --no-save
 
-WORKDIR /app
+# Copy your Puppeteer script into the Docker image
+COPY --chown=apify:apify . .
 
-ARG PORT
-ENV PORT $PORT
-EXPOSE $PORT
+# Update the PUPPETEER_EXECUTABLE_PATH to the correct Chrome path (placeholder, update based on the output of `which google-chrome-stable`)
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
-
-
-COPY --from=builder /app/assets ./assets
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/*.json /app/*-lock.yaml ./
-ENV PUPPETEER_SKIP_CHROMIUM_DONWLOAD=true
-
-RUN pnpm i puppeteer \
-    && groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
-    && mkdir -p /home/pptruser/Downloads \
-    && chown -R pptruser:pptruser /home/pptruser \
-    && chown -R pptruser:pptruser /node_modules \
-    && chown -R pptruser:pptruser /package.json \
-    && chown -R pptruser:pptruser /package-lock.json
-
-USER pptruser
-RUN corepack enable && corepack prepare pnpm@latest --activate 
-ENV PNPM_HOME=/usr/local/bin
-
-RUN npm cache clean --force && pnpm install --production --ignore-scripts \
-    && addgroup -g 1001 -S nodejs && adduser -S -u 1001 nodejs \
-    && rm -rf $PNPM_HOME/.npm $PNPM_HOME/.node-gyp
-
-CMD ["npm", "start"]
-
+# Set the command to run your Puppeteer script
+CMD ["node", "puppeteer-script.js"]
