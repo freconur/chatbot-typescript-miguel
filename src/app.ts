@@ -100,7 +100,7 @@ const flujoPagoVerificacion = addKeyword(['verificacion', 'verificar'])
                             "--single-process",
                             "--no-zygote"
                           ],
-                          executablePath: puppeteer.executablePath(),
+                          executablePath: "/usr/bin/google-chrome-stable",
                           // ignoreHTTPSErrors: true,
                           // slowMo:3000
                         })
