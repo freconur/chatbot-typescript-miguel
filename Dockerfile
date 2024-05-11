@@ -8,9 +8,8 @@ ARG PORT
 ENV PORT $PORT
 EXPOSE $PORT
 
-COPY /app/assets ./assets
-COPY /app/dist ./dist
-COPY /app/*.json /app/*-lock.yaml ./
+COPY . .
+
 RUN apt-get update \
     && apt-get install -y wget gnupg \
     && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
