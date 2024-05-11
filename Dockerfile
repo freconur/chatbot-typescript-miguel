@@ -32,8 +32,9 @@ EXPOSE $PORT
 COPY --from=builder /app/assets ./assets
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/*.json /app/*-lock.yaml ./
-
+RUN pnpm install puppeteer@22.7.1
 RUN corepack enable && corepack prepare pnpm@latest --activate 
+ENV PUPPETEER_SKIP_CHROMIUM_DONWLOAD=true 
 ENV PNPM_HOME=/usr/local/bin
 
 RUN npm cache clean --force && pnpm install --production --ignore-scripts \
