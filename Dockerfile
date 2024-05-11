@@ -8,7 +8,7 @@ ARG PORT
 ENV PORT $PORT
 EXPOSE $PORT
 
-COPY . .
+# COPY . .
 
 RUN apt-get update \
     && apt-get install -y wget gnupg \
@@ -45,4 +45,4 @@ RUN npm init -y &&  \
 # Run everything after as non-privileged user.
 USER pptruser
 
-CMD ["npm", "start"]
+CMD ["npm", "start", "google-chrome-stable"]
