@@ -31,8 +31,8 @@ COPY --from=builder /app/assets ./assets
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/*.json /app/*-lock.yaml ./
 ENV PUPPETEER_SKIP_CHROMIUM_DONWLOAD=true
-RUN pnpm init -y &&  \
-    pnpm i puppeteer \
+
+RUN pnpm i puppeteer \
     && groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
     && mkdir -p /home/pptruser/Downloads \
     && chown -R pptruser:pptruser /home/pptruser \
