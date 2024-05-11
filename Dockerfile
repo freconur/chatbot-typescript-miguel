@@ -32,7 +32,7 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/*.json /app/*-lock.yaml ./
 
 RUN corepack enable && corepack prepare pnpm@latest --activate \
-    npm install puppeteer@22.7.1
+    pnpm install puppeteer@22.7.1
 ENV PNPM_HOME=/usr/local/bin
 
 RUN npm cache clean --force && pnpm install --production --ignore-scripts \
