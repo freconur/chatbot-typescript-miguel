@@ -1,6 +1,8 @@
 FROM bitnami/node:18-debian-12 as builder
 
 WORKDIR /app
+RUN npm ci
+RUN npm run build
 RUN apt-get update \
     && apt-get install -y wget gnupg \
     && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
@@ -17,8 +19,6 @@ ENV PNPM_HOME=/usr/local/bin
 COPY package*.json *-lock.yaml ./
 # RUN npm install node-gyp -g
 COPY . .
-RUN npm ci
-RUN npm run build
     # npm prune --production
 #  apk add --no-cache --virtual .gyp \
 # RUN apk add --no-cache --virtual .gyp \
