@@ -25,8 +25,8 @@ RUN apk add --no-cache \
     harfbuzz \
     ca-certificates \
     ttf-freefont \
-    nodejs \
-    install 
+    nodejs 
+
 RUN  npm install puppeteer@10.0.0
 # RUN set -x \
 #     && apk update \
@@ -71,8 +71,7 @@ RUN apk add --no-cache \
     harfbuzz \
     ca-certificates \
     ttf-freefont \
-    nodejs \
-    install 
+    nodejs 
 RUN  npm install puppeteer@10.0.0
 # RUN set -x \
 #     && apk update \
