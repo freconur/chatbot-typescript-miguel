@@ -18,8 +18,8 @@ COPY package*.json *-lock.yaml ./
 # RUN npm install node-gyp -g
 COPY . .
 RUN npm ci
-RUN npm run build && \
-    npm prune --production
+RUN npm run build && 
+    # npm prune --production
 #  apk add --no-cache --virtual .gyp \
 # RUN apk add --no-cache --virtual .gyp \
 #     python3 \
