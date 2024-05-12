@@ -9,8 +9,6 @@ RUN apt-get update \
 && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
 --no-install-recommends \
 && rm -rf /var/lib/apt/lists/*
-RUN npm ci
-RUN npm run build
 RUN corepack enable && corepack prepare npm@latest --activate
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
@@ -19,7 +17,9 @@ ENV PNPM_HOME=/usr/local/bin
 COPY package*.json *-lock.yaml ./
 # RUN npm install node-gyp -g
 COPY . .
-    # npm prune --production
+RUN npm ci
+RUN npm run build \
+    npm prune --production
 #  apk add --no-cache --virtual .gyp \
 # RUN apk add --no-cache --virtual .gyp \
 #     python3 \
@@ -57,4 +57,4 @@ COPY --from=builder /app/*.json /app/*-lock.yaml ./
 #     && addgroup -g 1001 -S nodejs && adduser -S -u 1001 nodejs \
 #     && rm -rf $PNPM_HOME/.npm $PNPM_HOME/.node-gyp
 
-CMD ["npm","dist","start"]
+CMD ["npm","run","start"]
