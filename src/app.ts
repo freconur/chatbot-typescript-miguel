@@ -100,7 +100,7 @@ const flujoPagoVerificacion = addKeyword(['verificacion', 'verificar'])
                             "--single-process",
                             "--no-zygote"
                           ],
-                          executablePath: "/usr/bin/google-chrome-stable",
+                          executablePath: "/usr/bin/chromium-browser",
                           // executablePath: await chromium.executablePath(),
                           // ignoreHTTPSErrors: true,
                           // slowMo:3000
