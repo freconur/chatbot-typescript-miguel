@@ -1,6 +1,6 @@
 FROM bitnami/node:18-debian-12 as builder
 
-WORKDIR /usr/src/app
+WORKDIR /app
 RUN apt-get update \
     && apt-get install -y wget gnupg \
     && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
@@ -31,7 +31,7 @@ RUN npm run build && \
 
 FROM bitnami/node:18-debian-12 as deploy
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
 ARG PORT
 ENV PORT $PORT
@@ -50,9 +50,9 @@ RUN corepack enable && corepack prepare npm@latest  --activate
 ENV PNPM_HOME=/usr/local/bin
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 # RUN npm install node-gyp -g
-COPY --from=builder /usr/src/app/assets ./assets
-COPY --from=builder /usr/src/app/dist ./dist
-COPY --from=builder /usr/src/app/*.json /app/*-lock.yaml ./
+COPY --from=builder /app/assets ./assets
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/*.json /app/*-lock.yaml ./
 # RUN npm cache clean --force && pnpm install --production --ignore-scripts \
 #     && addgroup -g 1001 -S nodejs && adduser -S -u 1001 nodejs \
 #     && rm -rf $PNPM_HOME/.npm $PNPM_HOME/.node-gyp
